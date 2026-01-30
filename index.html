@@ -5,37 +5,243 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>StreamKar Training Bot</title>
     <style>
-        body { font-family: sans-serif; background: #f0f2f5; display: flex; justify-content: center; height: 100vh; margin: 0; }
-        .chat-container { width: 100%; max-width: 400px; background: white; display: flex; flex-direction: column; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        .header { background: #E91E63; color: white; padding: 15px; text-align: center; font-weight: bold; }
-        .chat-box { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
-        .message { padding: 10px; border-radius: 10px; max-width: 80%; line-height: 1.4; font-size: 14px; }
-        .user { background: #E91E63; color: white; align-self: flex-end; }
-        .bot { background: #e4e6eb; color: black; align-self: flex-start; }
-        .input-area { padding: 15px; border-top: 1px solid #ddd; display: flex; gap: 10px; }
-        input { flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 20px; outline: none; }
-        button { background: #E91E63; color: white; border: none; padding: 10px 20px; border-radius: 20px; cursor: pointer; }
-        button:disabled { background: #ccc; }
-        .loading { font-style: italic; color: #888; font-size: 12px; margin-left: 10px; display: none; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); /* StreamKar Purple Theme */
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .chat-container {
+            width: 100%;
+            max-width: 900px;
+            height: 90vh;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .chat-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .chat-header h1 { font-size: 24px; margin-bottom: 5px; }
+        .chat-header p { font-size: 14px; opacity: 0.9; }
+
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background: #f8f9fa;
+        }
+
+        .message {
+            margin-bottom: 20px;
+            display: flex;
+            align-items: flex-start;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message.user { flex-direction: row-reverse; }
+
+        .message-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+            flex-shrink: 0;
+            font-size: 14px;
+        }
+
+        .message.bot .message-avatar { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .message.user .message-avatar { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+
+        .message-content { max-width: 70%; margin: 0 15px; }
+
+        .message-bubble {
+            padding: 15px 20px;
+            border-radius: 18px;
+            line-height: 1.5;
+            font-size: 15px;
+        }
+
+        .message.bot .message-bubble {
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-top-left-radius: 4px;
+            color: #333;
+        }
+
+        .message.user .message-bubble {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-top-right-radius: 4px;
+        }
+        
+        /* Markdown Styling inside bubbles */
+        .message-bubble strong { font-weight: 700; color: inherit; }
+        .message-bubble ul { margin-left: 20px; margin-top: 5px; margin-bottom: 5px; }
+        .message-bubble li { margin-bottom: 4px; }
+
+        .typing-indicator {
+            display: none;
+            align-items: center;
+            padding: 15px 20px;
+            background: white;
+            border-radius: 18px;
+            border-top-left-radius: 4px;
+            width: fit-content;
+            border: 1px solid #e0e0e0;
+            margin-left: 55px; /* Align with bot messages */
+            margin-bottom: 20px;
+        }
+
+        .typing-indicator span {
+            height: 8px;
+            width: 8px;
+            background: #667eea;
+            border-radius: 50%;
+            display: inline-block;
+            margin: 0 2px;
+            animation: typing 1.4s infinite;
+        }
+        .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+        .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes typing {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-8px); }
+        }
+
+        .chat-input-container {
+            padding: 20px;
+            background: white;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .quick-questions {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            overflow-x: auto;
+            padding-bottom: 5px;
+        }
+
+        .quick-question-btn {
+            padding: 8px 16px;
+            background: #f0f0f0;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 13px;
+            white-space: nowrap;
+            transition: all 0.2s;
+            color: #555;
+        }
+
+        .quick-question-btn:hover {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .input-wrapper { display: flex; gap: 10px; }
+
+        .chat-input {
+            flex: 1;
+            padding: 15px 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 25px;
+            font-size: 15px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .chat-input:focus { border-color: #667eea; }
+
+        .send-button {
+            padding: 15px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: transform 0.2s;
+        }
+        
+        .send-button:hover { transform: scale(1.05); }
+        .send-button:disabled { opacity: 0.7; cursor: wait; }
+
     </style>
 </head>
 <body>
 
 <div class="chat-container">
-    <div class="header">StreamKar Support</div>
-    <div class="chat-box" id="chat-box">
-        <div class="message bot">Hello! Ask me anything about StreamKar.</div>
+    <div class="chat-header">
+        <h1>🎥 StreamKar Support Bot</h1>
+        <p>Powered by Gemini 2.5 Flash</p>
     </div>
-    <div class="loading" id="loading">Typing...</div>
-    <div class="input-area">
-        <input type="text" id="user-input" placeholder="Type a message..." onkeypress="handleEnter(event)">
-        <button onclick="sendMessage()">Send</button>
+
+    <div class="chat-messages" id="chat-box">
+        <div class="message bot">
+            <div class="message-avatar">SK</div>
+            <div class="message-content">
+                <div class="message-bubble">
+                    👋 <strong>Hello! I'm KarBot.</strong><br><br>
+                    I can help you with:<br>
+                    • Account creation & passwords<br>
+                    • Starting a live stream<br>
+                    • Earning Beans & Gems<br>
+                    • Technical support<br><br>
+                    Ask me anything!
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="typing-indicator" id="loading">
+        <span></span><span></span><span></span>
+    </div>
+
+    <div class="chat-input-container">
+        <div class="quick-questions">
+            <button class="quick-question-btn" onclick="sendQuickQuestion('How do I create an account?')">How to create account?</button>
+            <button class="quick-question-btn" onclick="sendQuickQuestion('How do I withdraw salary?')">Withdraw Salary</button>
+            <button class="quick-question-btn" onclick="sendQuickQuestion('My audio is lagging')">Audio Issues</button>
+            <button class="quick-question-btn" onclick="sendQuickQuestion('What is a PK Battle?')">PK Battle</button>
+        </div>
+        <div class="input-wrapper">
+            <input type="text" class="chat-input" id="user-input" placeholder="Type your question..." onkeypress="handleEnter(event)">
+            <button class="send-button" onclick="sendMessage()">Send</button>
+        </div>
     </div>
 </div>
 
 <script>
-    // IMPORTANT: Replace this URL with your actual backend URL after deployment
-    const BACKEND_URL = "https://streamkar-bot.onrender.com/chat";
+    // ⚠️ IMPORTANT: Replace with your actual Render URL
+    // Example: "https://streamkar-bot.onrender.com/chat"
+    const BACKEND_URL = "https://streamkar-bot.onrender.com/chat"; 
 
     async function sendMessage() {
         const input = document.getElementById("user-input");
@@ -45,13 +251,16 @@
         
         if (!msg) return;
 
-        // Add User Message
-        chatBox.innerHTML += `<div class="message user">${msg}</div>`;
+        // 1. Add User Message
+        addMessage(msg, 'user');
         input.value = "";
+        
+        // 2. Show Typing Indicator
+        loading.style.display = "flex";
         chatBox.scrollTop = chatBox.scrollHeight;
-        loading.style.display = "block";
 
         try {
+            // 3. Call Gemini Backend
             const response = await fetch(BACKEND_URL, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -60,22 +269,52 @@
 
             const data = await response.json();
             
+            // 4. Hide Loading & Show Bot Response
+            loading.style.display = "none";
+            
             if (data.reply) {
-                chatBox.innerHTML += `<div class="message bot">${data.reply}</div>`;
-            } else if (data.detail) {
-                 // This will show the actual server error (e.g., "API Key missing")
-                chatBox.innerHTML += `<div class="message bot" style="color:red">System Error: ${data.detail}</div>`;
+                // Convert simple Markdown bolding (**text**) to HTML (<b>text</b>) for better display
+                let formattedReply = data.reply.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
+                // Convert newlines to breaks
+                formattedReply = formattedReply.replace(/\n/g, "<br>");
+                
+                addMessage(formattedReply, 'bot');
             } else {
-                chatBox.innerHTML += `<div class="message bot" style="color:red">Error: Unexpected response format.</div>`;
+                addMessage("⚠️ System Error: " + (data.detail || "Unknown error"), 'bot');
             }
 
         } catch (error) {
-            console.error("Connection Error:", error);
-            chatBox.innerHTML += `<div class="message bot" style="color:red">Network Error: Could not connect to server.</div>`;
+            loading.style.display = "none";
+            addMessage("❌ Network Error: Could not connect to server.", 'bot');
         }
+    }
+
+    function addMessage(text, sender) {
+        const chatBox = document.getElementById("chat-box");
+        const div = document.createElement("div");
+        div.className = `message ${sender}`;
         
-        loading.style.display = "none";
+        const avatarHTML = sender === 'bot' ? '<div class="message-avatar">SK</div>' : '<div class="message-avatar">U</div>';
+        
+        div.innerHTML = `
+            ${sender === 'bot' ? avatarHTML : ''}
+            <div class="message-content">
+                <div class="message-bubble">${text}</div>
+            </div>
+            ${sender === 'user' ? avatarHTML : ''}
+        `;
+        
+        chatBox.appendChild(div);
         chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    function sendQuickQuestion(question) {
+        document.getElementById("user-input").value = question;
+        sendMessage();
+    }
+
+    function handleEnter(e) {
+        if (e.key === "Enter") sendMessage();
     }
 </script>
 
