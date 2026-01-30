@@ -1,5 +1,6 @@
 import os
 import random
+import requests
 import base64
 import google.generativeai as genai
 from fastapi import FastAPI, HTTPException
@@ -93,17 +94,36 @@ async def chat_endpoint(request: ChatRequest):
         print(f"Error: {e}")
         return {"reply": "I'm having trouble analyzing that. Please try again."}
 
-# --- ENDPOINT 2: IMAGE GENERATION ---
 @app.post("/generate-logo")
 async def generate_logo_endpoint():
-    # Dynamic Prompt for StreamKar style
-    prompt = "StreamKar app logo, luxury gold and purple neon, 3d glossy render, high quality, cyberpunk style, social media avatar"
+    # 1. Setup Hugging Face (Stable Diffusion XL)
+    API_URL = "https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-xl-base-1.0"
+    hf_token = os.getenv("HF_TOKEN")
     
-    # Random seed ensures a NEW image every time
-    seed = random.randint(1, 99999)
-    image_url = f"https://image.pollinations.ai/prompt/{prompt}?seed={seed}&width=512&height=512&nologo=true"
-    
-    return {"image_url": image_url}
+    if not hf_token:
+        return {"error": "HF_TOKEN missing in .env"}
 
-if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    headers = {"Authorization": f"Bearer {hf_token}"}
+    
+    # 2. Define the Prompt
+    prompt = "StreamKar app logo, luxury gold and purple neon, 3d glossy render, high quality, cyberpunk style, social media avatar, clean background"
+    
+    try:
+        # 3. Request Image from Hugging Face
+        response = requests.post(API_URL, headers=headers, json={"inputs": prompt})
+        
+        if response.status_code == 200:
+            # Hugging Face returns raw image bytes. We must convert to Base64.
+            img_b64 = base64.b64encode(response.content).decode("utf-8")
+            
+            # Format it as a Data URL so the frontend can display it
+            image_url = f"data:image/jpeg;base64,{img_b64}"
+            
+            return {"image_url": image_url}
+        else:
+            # If the model is loading, it might return a 503 error initially
+            return {"error": "Model is loading... try again in 30 seconds."}
+            
+    except Exception as e:
+        print(f"Error: {e}")
+        return {"error": "Failed to generate logo."}
