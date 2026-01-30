@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StreamKar Training Bot</title>
+    <style>
+        body { font-family: sans-serif; background: #f0f2f5; display: flex; justify-content: center; height: 100vh; margin: 0; }
+        .chat-container { width: 100%; max-width: 400px; background: white; display: flex; flex-direction: column; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .header { background: #E91E63; color: white; padding: 15px; text-align: center; font-weight: bold; }
+        .chat-box { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+        .message { padding: 10px; border-radius: 10px; max-width: 80%; line-height: 1.4; font-size: 14px; }
+        .user { background: #E91E63; color: white; align-self: flex-end; }
+        .bot { background: #e4e6eb; color: black; align-self: flex-start; }
+        .input-area { padding: 15px; border-top: 1px solid #ddd; display: flex; gap: 10px; }
+        input { flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 20px; outline: none; }
+        button { background: #E91E63; color: white; border: none; padding: 10px 20px; border-radius: 20px; cursor: pointer; }
+        button:disabled { background: #ccc; }
+        .loading { font-style: italic; color: #888; font-size: 12px; margin-left: 10px; display: none; }
+    </style>
+</head>
+<body>
+
+<div class="chat-container">
+    <div class="header">StreamKar Support</div>
+    <div class="chat-box" id="chat-box">
+        <div class="message bot">Hello! Ask me anything about StreamKar.</div>
+    </div>
+    <div class="loading" id="loading">Typing...</div>
+    <div class="input-area">
+        <input type="text" id="user-input" placeholder="Type a message..." onkeypress="handleEnter(event)">
+        <button onclick="sendMessage()">Send</button>
+    </div>
+</div>
+
+<script>
+    // IMPORTANT: Replace this URL with your actual backend URL after deployment
+    const BACKEND_URL = "http://127.0.0.1:8000/chat"; 
+
+    async function sendMessage() {
+        const input = document.getElementById("user-input");
+        const chatBox = document.getElementById("chat-box");
+        const loading = document.getElementById("loading");
+        const msg = input.value.trim();
+        
+        if (!msg) return;
+
+        // Add User Message
+        chatBox.innerHTML += `<div class="message user">${msg}</div>`;
+        input.value = "";
+        chatBox.scrollTop = chatBox.scrollHeight;
+        loading.style.display = "block";
+
+        try {
+            // Note: In production, change the fetch URL to your Render/Railway URL
+            const response = await fetch(BACKEND_URL, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ message: msg })
+            });
+            const data = await response.json();
+            
+            // Add Bot Message
+            chatBox.innerHTML += `<div class="message bot">${data.reply}</div>`;
+        } catch (error) {
+            chatBox.innerHTML += `<div class="message bot" style="color:red">Error: Could not connect to server.</div>`;
+        }
+        
+        loading.style.display = "none";
+        chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    function handleEnter(e) {
+        if (e.key === "Enter") sendMessage();
+    }
+</script>
+
+</body>
+</html>
