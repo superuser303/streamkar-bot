@@ -15,7 +15,7 @@ The **StreamKar AI Support Bot** is an intelligent conversational agent designed
 * **Troubleshooting:** Common fixes for audio lag, login errors, and app freezes.
 
 ### 💡 Why this exists?
-StreamKar has a vast ecosystem of features that can be overwhelming for new users. This project leverages **Google's Gemini 1.5 Flash** model with a **RAG (Retrieval-Augmented Generation)** architecture to provide accurate, context-grounded answers 24/7, reducing the load on human support teams.
+StreamKar has a vast ecosystem of features that can be overwhelming for new users. This project leverages **Google's Gemini 2.5 Flash** model with a **RAG (Retrieval-Augmented Generation)** architecture to provide accurate, context-grounded answers 24/7, reducing the load on human support teams.
 
 ### ⚙️ How it works
 1.  **User Input:** The user asks a question via the web interface.
