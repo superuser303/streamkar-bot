@@ -52,26 +52,30 @@
         loading.style.display = "block";
 
         try {
-            // Note: In production, change the fetch URL to your Render/Railway URL
             const response = await fetch(BACKEND_URL, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ message: msg })
             });
+
             const data = await response.json();
             
-            // Add Bot Message
-            chatBox.innerHTML += `<div class="message bot">${data.reply}</div>`;
+            if (data.reply) {
+                chatBox.innerHTML += `<div class="message bot">${data.reply}</div>`;
+            } else if (data.detail) {
+                 // This will show the actual server error (e.g., "API Key missing")
+                chatBox.innerHTML += `<div class="message bot" style="color:red">System Error: ${data.detail}</div>`;
+            } else {
+                chatBox.innerHTML += `<div class="message bot" style="color:red">Error: Unexpected response format.</div>`;
+            }
+
         } catch (error) {
-            chatBox.innerHTML += `<div class="message bot" style="color:red">Error: Could not connect to server.</div>`;
+            console.error("Connection Error:", error);
+            chatBox.innerHTML += `<div class="message bot" style="color:red">Network Error: Could not connect to server.</div>`;
         }
         
         loading.style.display = "none";
         chatBox.scrollTop = chatBox.scrollHeight;
-    }
-
-    function handleEnter(e) {
-        if (e.key === "Enter") sendMessage();
     }
 </script>
 
