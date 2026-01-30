@@ -73,11 +73,10 @@
             color: white;
             flex-shrink: 0;
             font-size: 14px;
-            object-fit: cover; /* Ensures image fits circle perfectly */
+            object-fit: cover;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
 
-        /* Default user avatar style */
         .user-avatar-style {
             background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
         }
@@ -108,6 +107,7 @@
         .message-bubble ul { margin-left: 20px; margin-top: 5px; margin-bottom: 5px; }
         .message-bubble li { margin-bottom: 4px; }
 
+        /* Loading Dots */
         .typing-indicator {
             display: none;
             padding: 15px 20px;
@@ -119,7 +119,6 @@
             margin-left: 55px; 
             margin-bottom: 20px;
         }
-
         .typing-indicator span {
             height: 8px;
             width: 8px;
@@ -136,6 +135,7 @@
             30% { transform: translateY(-8px); }
         }
 
+        /* Input Area Styles */
         .chat-input-container {
             padding: 20px;
             background: white;
@@ -168,7 +168,7 @@
             border-color: #667eea;
         }
 
-        .input-wrapper { display: flex; gap: 10px; }
+        .input-wrapper { display: flex; gap: 10px; align-items: center; }
 
         .chat-input {
             flex: 1;
@@ -179,7 +179,6 @@
             outline: none;
             transition: border-color 0.3s;
         }
-
         .chat-input:focus { border-color: #667eea; }
 
         .send-button {
@@ -192,19 +191,20 @@
             font-weight: bold;
             transition: transform 0.2s;
         }
-        
         .send-button:hover { transform: scale(1.05); }
-        
+
+        /* Upload Button Style */
         .upload-btn {
             background: #f0f0f0;
             border: none;
-            padding: 0 15px;
-            border-radius: 25px;
+            padding: 10px 15px;
+            border-radius: 50%;
             font-size: 20px;
             cursor: pointer;
             transition: background 0.2s;
         }
         .upload-btn:hover { background: #e0e0e0; }
+
     </style>
 </head>
 <body>
@@ -217,7 +217,7 @@
                  style="vertical-align: middle; width: 35px; height: 35px; border-radius: 50%; margin-right: 10px; border: 2px solid rgba(255,255,255,0.3);">
             StreamKar Support Bot
         </h1>
-        <p>Expert Help • 24/7 AI Support</p>
+        <p>Expert Help • Vision Analysis • Logo Creator</p>
     </div>
 
     <div class="chat-messages" id="chat-box">
@@ -227,11 +227,9 @@
                 <div class="message-bubble">
                     👋 <strong>Hello! I'm StreamKar Bot.</strong><br><br>
                     I can help you with:<br>
-                    • Account & Passwords<br>
-                    • Starting a live stream<br>
-                    • Salary & Gems<br>
-                    • VIP & Guardians<br><br>
-                    How can I assist you today?
+                    • Creating Accounts & Salary<br>
+                    • <strong>Creating Logos</strong> (Click the button below!)<br>
+                    • <strong>Analyzing Screenshots</strong> (Click the 📎 icon!)<br>
                 </div>
             </div>
         </div>
@@ -243,44 +241,41 @@
 
     <div class="chat-input-container">
         <div class="quick-questions">
-            <button class="quick-question-btn" onclick="sendQuickQuestion('How to create an account?')">Create Account</button>
             <button class="quick-question-btn" onclick="sendQuickQuestion('How to withdraw salary?')">Withdraw Money</button>
             <button class="quick-question-btn" onclick="sendQuickQuestion('What is a PK Battle?')">PK Battle</button>
-            <button class="quick-question-btn" onclick="sendQuickQuestion('What is VIP status?')">VIP Status</button>
+            <button class="quick-question-btn" onclick="generateLogo()" style="background: #E91E63; color: white; border: none;">🎨 Create Logo</button>
         </div>
-    <div class="input-wrapper">
-        <input type="file" id="image-upload" accept="image/*" style="display: none;" onchange="handleImageUpload()">
-        
-        <button class="upload-btn" onclick="document.getElementById('image-upload').click()">
-            📎
-        </button>
-    
-        <input type="text" class="chat-input" id="user-input" placeholder="Type or upload a screenshot..." onkeypress="handleEnter(event)">
-        <button class="send-button" onclick="sendMessage()">Send</button>
-    </div>
-    
-    <div id="image-preview-container" style="display: none; padding: 10px; background: #f0f0f0; border-radius: 10px; margin-top: 10px; position: relative;">
-        <img id="image-preview" src="" style="max-height: 100px; border-radius: 5px;">
-        <button onclick="clearImage()" style="position: absolute; top: 5px; right: 5px; background: red; color: white; border: none; border-radius: 50%; width: 20px; height: 20px; cursor: pointer;">×</button>
-    </div>
+
+        <div id="image-preview-container" style="display: none; padding: 10px; background: #f0f0f0; border-radius: 10px; margin-bottom: 10px; position: relative; width: fit-content;">
+            <img id="image-preview" src="" style="max-height: 80px; border-radius: 5px;">
+            <button onclick="clearImage()" style="position: absolute; top: -5px; right: -5px; background: red; color: white; border: none; border-radius: 50%; width: 20px; height: 20px; cursor: pointer;">×</button>
+        </div>
+
+        <div class="input-wrapper">
+            <input type="file" id="image-upload" accept="image/*" style="display: none;" onchange="handleImageUpload()">
+            
+            <button class="upload-btn" onclick="document.getElementById('image-upload').click()" title="Upload Screenshot">📎</button>
+
+            <input type="text" class="chat-input" id="user-input" placeholder="Type a message..." onkeypress="handleEnter(event)">
+            <button class="send-button" onclick="sendMessage()">Send</button>
+        </div>
     </div>
 </div>
 
 <script>
+    // ⚠️ UPDATE THIS: Ensure it matches your Render URL
     const BACKEND_URL = "https://streamkar-bot.onrender.com/chat"; 
-
+    
     let currentImageBase64 = null;
 
-    // Handle File Selection
+    // --- 1. HANDLE IMAGE UPLOAD (VISION) ---
     function handleImageUpload() {
         const fileInput = document.getElementById('image-upload');
         const file = fileInput.files[0];
-        
         if (file) {
             const reader = new FileReader();
             reader.onload = function(e) {
                 currentImageBase64 = e.target.result;
-                // Show Preview
                 document.getElementById('image-preview').src = currentImageBase64;
                 document.getElementById('image-preview-container').style.display = 'block';
             };
@@ -294,32 +289,29 @@
         document.getElementById('image-preview-container').style.display = 'none';
     }
 
-    // Update sendMessage to include the image
+    // --- 2. SEND MESSAGE (TEXT + OPTIONAL IMAGE) ---
     async function sendMessage() {
         const input = document.getElementById("user-input");
         const msg = input.value.trim();
+        const loading = document.getElementById("loading");
         
-        // Don't send if empty AND no image
         if (!msg && !currentImageBase64) return;
 
-        // Display Logic
+        // Display User Message
+        let userHTML = msg;
         if (currentImageBase64) {
-            addMessage(`<img src="${currentImageBase64}" style="max-width: 200px; border-radius: 10px;"><br>${msg}`, 'user');
-        } else {
-            addMessage(msg, 'user');
+            userHTML = `<img src="${currentImageBase64}" style="max-width: 200px; border-radius: 10px; margin-bottom:5px;"><br>${msg}`;
         }
+        addMessage(userHTML, 'user');
 
         const payload = {
-            message: msg || "Analyze this image", // Default text if only image sent
+            message: msg || "Analyze this image",
             image: currentImageBase64
         };
 
-        // Clear Inputs
+        // Reset Input
         input.value = "";
         clearImage();
-        
-        // Show Loading
-        const loading = document.getElementById("loading");
         loading.style.display = "flex";
 
         try {
@@ -328,7 +320,6 @@
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(payload)
             });
-
             const data = await response.json();
             loading.style.display = "none";
             
@@ -336,20 +327,53 @@
                 let formattedReply = data.reply.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>").replace(/\n/g, "<br>");
                 addMessage(formattedReply, 'bot');
             } else {
-                addMessage("⚠️ " + (data.detail || "Error analyzing image"), 'bot');
+                addMessage("⚠️ Error: " + (data.detail || "Unknown"), 'bot');
             }
         } catch (error) {
             loading.style.display = "none";
             addMessage("❌ Connection Error", 'bot');
         }
     }
-    
-    function addMessage(text, sender) {
+
+    // --- 3. GENERATE LOGO (CREATION) ---
+    async function generateLogo() {
+        const loading = document.getElementById("loading");
+        addMessage("🎨 Generate a StreamKar Avatar for me!", 'user');
+        loading.style.display = "flex";
+
+        try {
+            // We replace /chat with /generate-logo in the URL
+            const logoUrl = BACKEND_URL.replace("/chat", "/generate-logo");
+            
+            const response = await fetch(logoUrl, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" }
+            });
+            const data = await response.json();
+            loading.style.display = "none";
+
+            if (data.image_url) {
+                const imgHTML = `
+                    <div>Here is your custom avatar:</div>
+                    <img src="${data.image_url}" style="width: 100%; max-width: 300px; border-radius: 15px; margin-top: 10px; border: 2px solid #E91E63;">
+                    <div style="font-size: 12px; color: #888; margin-top: 5px;">Right-click to save.</div>
+                `;
+                addMessage(imgHTML, 'bot');
+            } else {
+                addMessage("⚠️ Could not generate image.", 'bot');
+            }
+        } catch (error) {
+            loading.style.display = "none";
+            addMessage("❌ Generation Error", 'bot');
+        }
+    }
+
+    // --- HELPER FUNCTIONS ---
+    function addMessage(htmlContent, sender) {
         const chatBox = document.getElementById("chat-box");
         const div = document.createElement("div");
         div.className = `message ${sender}`;
         
-        // Use StreamKar Logo for Bot, Gradient Circle for User
         const avatarHTML = sender === 'bot' 
             ? '<img src="https://www.google.com/s2/favicons?domain=streamkar.com&sz=64" class="message-avatar" alt="SK">' 
             : '<div class="message-avatar user-avatar-style">U</div>';
@@ -357,11 +381,10 @@
         div.innerHTML = `
             ${sender === 'bot' ? avatarHTML : ''}
             <div class="message-content">
-                <div class="message-bubble">${text}</div>
+                <div class="message-bubble">${htmlContent}</div>
             </div>
             ${sender === 'user' ? avatarHTML : ''}
         `;
-        
         chatBox.appendChild(div);
         chatBox.scrollTop = chatBox.scrollHeight;
     }
