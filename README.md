@@ -2,7 +2,7 @@
 
 ![Python](https://img.shields.io/badge/Python-3.9%2B-blue)
 ![FastAPI](https://img.shields.io/badge/FastAPI-0.68%2B-green)
-![Gemini API](https://img.shields.io/badge/AI-Gemini%201.5%20Flash-orange)
+![Gemini API](https://img.shields.io/badge/AI-Gemini%202.5%20Flash-orange)
 ![Status](https://img.shields.io/badge/Status-Production%20Ready-brightgreen)
 
 ## 📖 About The Project
