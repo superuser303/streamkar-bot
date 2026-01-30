@@ -10,7 +10,7 @@ An intelligent, context-aware chatbot designed to assist users of **StreamKar**.
 ## 🚀 Features
 
 * **Context-Aware AI:** Uses a custom knowledge base (`context.txt`) to provide accurate, specific answers about StreamKar.
-* **Real-time Streaming:** Fast responses using the lightweight Gemini 1.5 Flash model.
+* **Real-time Streaming:** Fast responses using the lightweight Gemini 2.5 Flash model.
 * **Web Interface:** A clean, responsive HTML/CSS/JS chat interface similar to modern support widgets.
 * **System Guardrails:** Prevents hallucinations by strictly grounding answers in the provided context.
 * **Scalable Backend:** Asynchronous handling via FastAPI to support multiple concurrent users.
