@@ -2,6 +2,7 @@ import os
 import random
 import requests
 import base64
+import time
 import google.generativeai as genai
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -96,34 +97,45 @@ async def chat_endpoint(request: ChatRequest):
 
 @app.post("/generate-logo")
 async def generate_logo_endpoint():
-    # 1. Setup Hugging Face (Stable Diffusion XL)
     API_URL = "https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-xl-base-1.0"
     hf_token = os.getenv("HF_TOKEN")
     
     if not hf_token:
-        return {"error": "HF_TOKEN missing in .env"}
+        return {"error": "HF_TOKEN missing"}
 
     headers = {"Authorization": f"Bearer {hf_token}"}
-    
-    # 2. Define the Prompt
     prompt = "StreamKar app logo, luxury gold and purple neon, 3d glossy render, high quality, cyberpunk style, social media avatar, clean background"
     
-    try:
-        # 3. Request Image from Hugging Face
-        response = requests.post(API_URL, headers=headers, json={"inputs": prompt})
-        
-        if response.status_code == 200:
-            # Hugging Face returns raw image bytes. We must convert to Base64.
-            img_b64 = base64.b64encode(response.content).decode("utf-8")
+    # --- THE RETRY LOGIC ---
+    payload = {"inputs": prompt}
+    retry_count = 0
+    max_retries = 5
+
+    while retry_count < max_retries:
+        try:
+            response = requests.post(API_URL, headers=headers, json=payload)
             
-            # Format it as a Data URL so the frontend can display it
-            image_url = f"data:image/jpeg;base64,{img_b64}"
+            # Case 1: Success (200 OK)
+            if response.status_code == 200:
+                img_b64 = base64.b64encode(response.content).decode("utf-8")
+                image_url = f"data:image/jpeg;base64,{img_b64}"
+                return {"image_url": image_url}
             
-            return {"image_url": image_url}
-        else:
-            # If the model is loading, it might return a 503 error initially
-            return {"error": "Model is loading... try again in 30 seconds."}
+            # Case 2: Model is Loading (503 Service Unavailable)
+            elif response.status_code == 503:
+                error_data = response.json()
+                estimated_time = error_data.get("estimated_time", 20) # Default to 20s if unknown
+                
+                print(f"Model is sleeping. Waking up... Waiting {estimated_time}s")
+                time.sleep(estimated_time) # The Python code pauses here
+                retry_count += 1
+                continue # Loop back and try again
+                
+            # Case 3: Other Errors
+            else:
+                return {"error": f"Hugging Face Error: {response.text}"}
+                
+        except Exception as e:
+            return {"error": str(e)}
             
-    except Exception as e:
-        print(f"Error: {e}")
-        return {"error": "Failed to generate logo."}
+    return {"error": "Model took too long to load. Please try again."}
