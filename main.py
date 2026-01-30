@@ -1,6 +1,5 @@
 import os
 import random
-import requests
 import urllib.parse
 import base64
 import time
