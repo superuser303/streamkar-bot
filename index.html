@@ -362,8 +362,10 @@
                 `;
                 addMessage(imgHTML, 'bot');
             } else {
-                addMessage("⚠️ Could not generate image.", 'bot');
+                // Show the ACTUAL error from Python (e.g., "Model is loading...")
+                addMessage("⚠️ " + (data.error || "Could not generate image."), 'bot');
             }
+            
         } catch (error) {
             loading.style.display = "none";
             addMessage("❌ Generation Error", 'bot');
