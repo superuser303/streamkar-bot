@@ -29,7 +29,7 @@ except FileNotFoundError:
 API_KEY = os.environ.get("GEMINI_API_KEY")
 if API_KEY:
     genai.configure(api_key=API_KEY)
-    model = genai.GenerativeModel('gemini-3.0-flash')
+    model = genai.GenerativeModel('gemini-3-flash')
 else:
     model = None
 
