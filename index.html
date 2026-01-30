@@ -66,6 +66,7 @@
             width: 40px;
             height: 40px;
             border-radius: 50%;
+            overflow: hidden;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -206,7 +207,10 @@
 
     <div class="chat-messages" id="chat-box">
         <div class="message bot">
-            <div class="message-avatar">SK</div>
+            <img src="https://play-lh.googleusercontent.com/Vi_C8_G7aT7XGYr6-X9n7-L6T5Q7E5J9z5z5z5z5z5z5z5z5=w240-h480-rw" 
+     class="message-avatar" 
+     alt="StreamKar Logo"
+     style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
             <div class="message-content">
                 <div class="message-bubble">
                     👋 <strong>Hello! I'm StreamKar Bot.</strong><br><br>
@@ -295,7 +299,9 @@
         const div = document.createElement("div");
         div.className = `message ${sender}`;
         
-        const avatarHTML = sender === 'bot' ? '<div class="message-avatar">SK</div>' : '<div class="message-avatar">U</div>';
+        const avatarHTML = sender === 'bot' 
+    ? '<img src="https://lh3.googleusercontent.com/pw/AP1GczO2X5yT9kU8Qy8r9jLqKqJ8X7z9y3v1_w=w200-h200-p-k-no-nu" class="message-avatar" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">' 
+    : '<div class="message-avatar">U</div>';
         
         div.innerHTML = `
             ${sender === 'bot' ? avatarHTML : ''}
