@@ -4,13 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>StreamKar Support Bot</title>
-    <link rel="icon" href="https://www.streamkar.com/assets/images/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="https://www.google.com/s2/favicons?domain=streamkar.com&sz=64" type="image/png">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); /* StreamKar Purple Theme */
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             height: 100vh;
             display: flex;
             justify-content: center;
@@ -66,7 +66,6 @@
             width: 40px;
             height: 40px;
             border-radius: 50%;
-            overflow: hidden;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -74,10 +73,14 @@
             color: white;
             flex-shrink: 0;
             font-size: 14px;
+            object-fit: cover; /* Ensures image fits circle perfectly */
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
         }
 
-        .message.bot .message-avatar { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
-        .message.user .message-avatar { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+        /* Default user avatar style */
+        .user-avatar-style {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
 
         .message-content { max-width: 70%; margin: 0 15px; }
 
@@ -101,21 +104,19 @@
             border-top-right-radius: 4px;
         }
         
-        /* Markdown Styling inside bubbles */
-        .message-bubble strong { font-weight: 700; color: inherit; }
+        .message-bubble strong { font-weight: 700; color: #764ba2; }
         .message-bubble ul { margin-left: 20px; margin-top: 5px; margin-bottom: 5px; }
         .message-bubble li { margin-bottom: 4px; }
 
         .typing-indicator {
             display: none;
-            align-items: center;
             padding: 15px 20px;
             background: white;
             border-radius: 18px;
             border-top-left-radius: 4px;
             width: fit-content;
             border: 1px solid #e0e0e0;
-            margin-left: 55px; /* Align with bot messages */
+            margin-left: 55px; 
             margin-bottom: 20px;
         }
 
@@ -193,33 +194,28 @@
         }
         
         .send-button:hover { transform: scale(1.05); }
-        .send-button:disabled { opacity: 0.7; cursor: wait; }
-
     </style>
 </head>
 <body>
 
 <div class="chat-container">
     <div class="chat-header">
-        <h1>🎥 StreamKar Support Bot</h1>
-        <p>Powered by Gemini 2.5 Flash</p>
+        <h1><link rel="icon" href="https://www.google.com/s2/favicons?domain=streamkar.com&sz=64" type="image/png"> StreamKar Support Bot</h1>
+        <p>Expert Help • 24/7 AI Support</p>
     </div>
 
     <div class="chat-messages" id="chat-box">
         <div class="message bot">
-            <img src="https://play-lh.googleusercontent.com/Vi_C8_G7aT7XGYr6-X9n7-L6T5Q7E5J9z5z5z5z5z5z5z5z5=w240-h480-rw" 
-     class="message-avatar" 
-     alt="StreamKar Logo"
-     style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
+            <img src="https://www.google.com/s2/favicons?domain=streamkar.com&sz=64" class="message-avatar" alt="SK">
             <div class="message-content">
                 <div class="message-bubble">
                     👋 <strong>Hello! I'm StreamKar Bot.</strong><br><br>
                     I can help you with:<br>
-                    • Account creation & passwords<br>
+                    • Account & Passwords<br>
                     • Starting a live stream<br>
-                    • Earning Beans & Gems<br>
-                    • Technical support<br><br>
-                    Ask me anything!
+                    • Salary & Gems<br>
+                    • VIP & Guardians<br><br>
+                    How can I assist you today?
                 </div>
             </div>
         </div>
@@ -231,10 +227,10 @@
 
     <div class="chat-input-container">
         <div class="quick-questions">
-            <button class="quick-question-btn" onclick="sendQuickQuestion('How do I create an account?')">How to create account?</button>
-            <button class="quick-question-btn" onclick="sendQuickQuestion('How do I withdraw salary?')">Withdraw Salary</button>
-            <button class="quick-question-btn" onclick="sendQuickQuestion('My audio is lagging')">Audio Issues</button>
+            <button class="quick-question-btn" onclick="sendQuickQuestion('How to create an account?')">Create Account</button>
+            <button class="quick-question-btn" onclick="sendQuickQuestion('How to withdraw salary?')">Withdraw Money</button>
             <button class="quick-question-btn" onclick="sendQuickQuestion('What is a PK Battle?')">PK Battle</button>
+            <button class="quick-question-btn" onclick="sendQuickQuestion('What is VIP status?')">VIP Status</button>
         </div>
         <div class="input-wrapper">
             <input type="text" class="chat-input" id="user-input" placeholder="Type your question..." onkeypress="handleEnter(event)">
@@ -244,8 +240,6 @@
 </div>
 
 <script>
-    // ⚠️ IMPORTANT: Replace with your actual Render URL
-    // Example: "https://streamkar-bot.onrender.com/chat"
     const BACKEND_URL = "https://streamkar-bot.onrender.com/chat"; 
 
     async function sendMessage() {
@@ -265,7 +259,6 @@
         chatBox.scrollTop = chatBox.scrollHeight;
 
         try {
-            // 3. Call Gemini Backend
             const response = await fetch(BACKEND_URL, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -274,23 +267,20 @@
 
             const data = await response.json();
             
-            // 4. Hide Loading & Show Bot Response
             loading.style.display = "none";
             
             if (data.reply) {
-                // Convert simple Markdown bolding (**text**) to HTML (<b>text</b>) for better display
+                // Convert simple Markdown bolding (**text**) to HTML (<strong>text</strong>)
                 let formattedReply = data.reply.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
-                // Convert newlines to breaks
                 formattedReply = formattedReply.replace(/\n/g, "<br>");
-                
                 addMessage(formattedReply, 'bot');
             } else {
-                addMessage("⚠️ System Error: " + (data.detail || "Unknown error"), 'bot');
+                addMessage("⚠️ " + (data.detail || "System Error"), 'bot');
             }
 
         } catch (error) {
             loading.style.display = "none";
-            addMessage("❌ Network Error: Could not connect to server.", 'bot');
+            addMessage("❌ Network Error: Please check your internet connection.", 'bot');
         }
     }
 
@@ -299,9 +289,10 @@
         const div = document.createElement("div");
         div.className = `message ${sender}`;
         
+        // Use StreamKar Logo for Bot, Gradient Circle for User
         const avatarHTML = sender === 'bot' 
-    ? '<img src="https://lh3.googleusercontent.com/pw/AP1GczO2X5yT9kU8Qy8r9jLqKqJ8X7z9y3v1_w=w200-h200-p-k-no-nu" class="message-avatar" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">' 
-    : '<div class="message-avatar">U</div>';
+            ? '<img src="https://www.google.com/s2/favicons?domain=streamkar.com&sz=64" class="message-avatar" alt="SK">' 
+            : '<div class="message-avatar user-avatar-style">U</div>';
         
         div.innerHTML = `
             ${sender === 'bot' ? avatarHTML : ''}
