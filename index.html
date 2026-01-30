@@ -194,6 +194,17 @@
         }
         
         .send-button:hover { transform: scale(1.05); }
+        
+        .upload-btn {
+            background: #f0f0f0;
+            border: none;
+            padding: 0 15px;
+            border-radius: 25px;
+            font-size: 20px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .upload-btn:hover { background: #e0e0e0; }
     </style>
 </head>
 <body>
@@ -237,58 +248,102 @@
             <button class="quick-question-btn" onclick="sendQuickQuestion('What is a PK Battle?')">PK Battle</button>
             <button class="quick-question-btn" onclick="sendQuickQuestion('What is VIP status?')">VIP Status</button>
         </div>
-        <div class="input-wrapper">
-            <input type="text" class="chat-input" id="user-input" placeholder="Type your question..." onkeypress="handleEnter(event)">
-            <button class="send-button" onclick="sendMessage()">Send</button>
-        </div>
+    <div class="input-wrapper">
+        <input type="file" id="image-upload" accept="image/*" style="display: none;" onchange="handleImageUpload()">
+        
+        <button class="upload-btn" onclick="document.getElementById('image-upload').click()">
+            📎
+        </button>
+    
+        <input type="text" class="chat-input" id="user-input" placeholder="Type or upload a screenshot..." onkeypress="handleEnter(event)">
+        <button class="send-button" onclick="sendMessage()">Send</button>
+    </div>
+    
+    <div id="image-preview-container" style="display: none; padding: 10px; background: #f0f0f0; border-radius: 10px; margin-top: 10px; position: relative;">
+        <img id="image-preview" src="" style="max-height: 100px; border-radius: 5px;">
+        <button onclick="clearImage()" style="position: absolute; top: 5px; right: 5px; background: red; color: white; border: none; border-radius: 50%; width: 20px; height: 20px; cursor: pointer;">×</button>
+    </div>
     </div>
 </div>
 
 <script>
     const BACKEND_URL = "https://streamkar-bot.onrender.com/chat"; 
 
+    let currentImageBase64 = null;
+
+    // Handle File Selection
+    function handleImageUpload() {
+        const fileInput = document.getElementById('image-upload');
+        const file = fileInput.files[0];
+        
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                currentImageBase64 = e.target.result;
+                // Show Preview
+                document.getElementById('image-preview').src = currentImageBase64;
+                document.getElementById('image-preview-container').style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+
+    function clearImage() {
+        currentImageBase64 = null;
+        document.getElementById('image-upload').value = "";
+        document.getElementById('image-preview-container').style.display = 'none';
+    }
+
+    // Update sendMessage to include the image
     async function sendMessage() {
         const input = document.getElementById("user-input");
-        const chatBox = document.getElementById("chat-box");
-        const loading = document.getElementById("loading");
         const msg = input.value.trim();
         
-        if (!msg) return;
+        // Don't send if empty AND no image
+        if (!msg && !currentImageBase64) return;
 
-        // 1. Add User Message
-        addMessage(msg, 'user');
+        // Display Logic
+        if (currentImageBase64) {
+            addMessage(`<img src="${currentImageBase64}" style="max-width: 200px; border-radius: 10px;"><br>${msg}`, 'user');
+        } else {
+            addMessage(msg, 'user');
+        }
+
+        const payload = {
+            message: msg || "Analyze this image", // Default text if only image sent
+            image: currentImageBase64
+        };
+
+        // Clear Inputs
         input.value = "";
+        clearImage();
         
-        // 2. Show Typing Indicator
+        // Show Loading
+        const loading = document.getElementById("loading");
         loading.style.display = "flex";
-        chatBox.scrollTop = chatBox.scrollHeight;
 
         try {
             const response = await fetch(BACKEND_URL, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ message: msg })
+                body: JSON.stringify(payload)
             });
 
             const data = await response.json();
-            
             loading.style.display = "none";
             
             if (data.reply) {
-                // Convert simple Markdown bolding (**text**) to HTML (<strong>text</strong>)
-                let formattedReply = data.reply.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
-                formattedReply = formattedReply.replace(/\n/g, "<br>");
+                let formattedReply = data.reply.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>").replace(/\n/g, "<br>");
                 addMessage(formattedReply, 'bot');
             } else {
-                addMessage("⚠️ " + (data.detail || "System Error"), 'bot');
+                addMessage("⚠️ " + (data.detail || "Error analyzing image"), 'bot');
             }
-
         } catch (error) {
             loading.style.display = "none";
-            addMessage("❌ Network Error: Please check your internet connection.", 'bot');
+            addMessage("❌ Connection Error", 'bot');
         }
     }
-
+    
     function addMessage(text, sender) {
         const chatBox = document.getElementById("chat-box");
         const div = document.createElement("div");
