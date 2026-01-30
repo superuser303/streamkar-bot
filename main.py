@@ -1,6 +1,7 @@
 import os
 import random
 import requests
+import urllib.parse
 import base64
 import time
 import google.generativeai as genai
@@ -97,42 +98,20 @@ async def chat_endpoint(request: ChatRequest):
 
 @app.post("/generate-logo")
 async def generate_logo_endpoint():
-    # UPDATED URL HERE:
-    API_URL = "https://router.huggingface.co/hf-inference/models/stabilityai/stable-diffusion-xl-base-1.0"
+    # 1. THE REAL WORKING REFERENCE (Google's High-Res Icon API)
+    # This grabs the official StreamKar logo dynamically
+    ref_image = "https://t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://streamkar.com&size=256"
     
-    hf_token = os.getenv("HF_TOKEN")
+    # 2. The Prompt (Describes the STYLE, while the image provides the SHAPE)
+    prompt = "cyberpunk neon style, glowing purple and gold edges, 3d glossy render, futuristic, high quality, 8k resolution"
     
-    if not hf_token:
-        return {"error": "HF_TOKEN missing"}
-
-    headers = {"Authorization": f"Bearer {hf_token}"}
-    prompt = "StreamKar app logo, luxury gold and purple neon, 3d glossy render, high quality, cyberpunk style, social media avatar, clean background"
+    # 3. Random Seed
+    seed = random.randint(1, 99999)
     
-    payload = {"inputs": prompt}
-    retry_count = 0
-    max_retries = 5
-
-    while retry_count < max_retries:
-        try:
-            response = requests.post(API_URL, headers=headers, json=payload)
-            
-            if response.status_code == 200:
-                img_b64 = base64.b64encode(response.content).decode("utf-8")
-                image_url = f"data:image/jpeg;base64,{img_b64}"
-                return {"image_url": image_url}
-            
-            elif response.status_code == 503:
-                error_data = response.json()
-                estimated_time = error_data.get("estimated_time", 20)
-                print(f"Model sleeping. Waiting {estimated_time}s...")
-                time.sleep(estimated_time)
-                retry_count += 1
-                continue
-                
-            else:
-                return {"error": f"Hugging Face Error: {response.text}"}
-                
-        except Exception as e:
-            return {"error": str(e)}
+    # 4. Construct URL
+    encoded_ref = urllib.parse.quote(ref_image)
+    final_url = f"https://image.pollinations.ai/prompt/{prompt}?image={encoded_ref}&seed={seed}&nologo=true"
+    
+    return {"image_url": final_url}
             
     return {"error": "Model took too long to load. Please try again."}
