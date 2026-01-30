@@ -1,23 +1,21 @@
 import os
-import logging
+import random
+import base64
 import google.generativeai as genai
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import uvicorn
-import base64
-import io
-from PIL import Image
 from dotenv import load_dotenv
 
-# 1. Setup Logging & Environment
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+# Imports for Vision Processing
+from PIL import Image
+import io
+
 load_dotenv()
 
 app = FastAPI()
 
-# 2. CORS Middleware (Crucial for connecting Frontend to Backend)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"], 
@@ -26,99 +24,86 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# 3. Load Knowledge Base
+# Load Knowledge Base
 try:
     with open("context.txt", "r") as f:
         KNOWLEDGE_BASE = f.read()
 except FileNotFoundError:
-    logger.error("context.txt not found!")
     KNOWLEDGE_BASE = "Context unavailable."
 
-# 4. Configure Gemini API
+# Configure Gemini
 API_KEY = os.getenv("GEMINI_API_KEY")
-
-if not API_KEY:
-    logger.warning("GEMINI_API_KEY not found in environment variables.")
-    model = None
-else:
+if API_KEY:
     genai.configure(api_key=API_KEY)
-    
-    # --- THIS IS THE UPDATED PERSONA ---
-    # We use a system instruction to force "Polite but Concise" answers.
     model = genai.GenerativeModel(
         'gemini-2.5-flash',
         system_instruction="""
-        You are 'StreamKar Bot', the helpful and polite support assistant for StreamKar.
+        You are 'StreamKar Bot', the helpful support assistant for StreamKar.
         
-        YOUR STYLE GUIDE:
-        1. Tone: Warm, polite, and professional (Use phrases like "I can help with that", "Please try").
-        2. Format Guidelines (MANDATORY):
-           - Use **Bold** for all button names, menu items, and links (e.g., Go to **Settings**).
-           - Use Bullet points for instructions with multiple steps.
-           - Keep paragraphs short (maximum 2 sentences).
-        3. Content Rule: Answer ONLY based on the provided Context. If you don't know, politely say so.
+        GUIDELINES:
+        1. Be polite but CONCISE (Max 3 sentences).
+        2. Use **Bold** for buttons/menus.
+        3. Use Bullet points for steps.
+        4. Answer ONLY from the Context.
+        5. If the user uploads an image, analyze it helpfully.
         
-        Example Interaction:
-        User: "How do I fix audio lag?"
-        You: "I can help with that! Audio lag is usually caused by internet speed. Please try these steps:
-        * Ensure your upload speed is at least **5Mbps**.
-        * Go to **Profile > Settings** and tap **Clear Cache**.
-        * Restart the app."
-        
-        Context Data:
+        Context:
         """ + KNOWLEDGE_BASE
     )
+else:
+    model = None
 
-# 5. Data Model
+# --- REQUEST MODELS ---
 class ChatRequest(BaseModel):
     message: str
+    image: str | None = None  # Accepts Base64 string
 
-# 6. Routes
-@app.get("/")
-def home():
-    return {"status": "StreamKar Bot is running"}
-
-# Update the Request Model to accept an optional image
-class ChatRequest(BaseModel):
-    message: str
-    image: str | None = None  # Base64 encoded image string
-
+# --- ENDPOINT 1: CHAT & VISION ---
 @app.post("/chat")
 async def chat_endpoint(request: ChatRequest):
     if not model:
         raise HTTPException(status_code=500, detail="API Key Missing")
     
     try:
-        # Prepare the content for Gemini
         content = []
         
-        # 1. Handle Image if provided
+        # 1. Handle Image (Vision)
         if request.image:
-            # Clean the base64 string (remove "data:image/png;base64," prefix)
+            # Clean base64 string
             if "base64," in request.image:
                 request.image = request.image.split("base64,")[1]
             
-            # Decode image
+            # Decode and prepare for Gemini
             image_data = base64.b64decode(request.image)
             image_parts = {
-                "mime_type": "image/jpeg", # defaulting to jpeg for simplicity
+                "mime_type": "image/jpeg",
                 "data": image_data
             }
             content.append(image_parts)
-            
-            # Add a specific prompt for images
-            content.append("User has uploaded this image. Analyze it in the context of StreamKar support. If it's an error, explain the fix. If it's a profile, explain the features visible.")
+            content.append("Analyze this image in the context of StreamKar. If it's a screenshot, explain what's happening.")
 
-        # 2. Add User Text
+        # 2. Add Text
         content.append(request.message)
 
-        # 3. Generate Response
+        # 3. Generate
         response = await model.generate_content_async(content)
         return {"reply": response.text}
 
     except Exception as e:
         print(f"Error: {e}")
-        return {"reply": "I'm having trouble analyzing that image. Please try again."}
-        
+        return {"reply": "I'm having trouble analyzing that. Please try again."}
+
+# --- ENDPOINT 2: IMAGE GENERATION ---
+@app.post("/generate-logo")
+async def generate_logo_endpoint():
+    # Dynamic Prompt for StreamKar style
+    prompt = "StreamKar app logo, luxury gold and purple neon, 3d glossy render, high quality, cyberpunk style, social media avatar"
+    
+    # Random seed ensures a NEW image every time
+    seed = random.randint(1, 99999)
+    image_url = f"https://image.pollinations.ai/prompt/{prompt}?seed={seed}&width=512&height=512&nologo=true"
+    
+    return {"image_url": image_url}
+
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)
