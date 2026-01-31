@@ -5,7 +5,7 @@
 ![Gemini AI](https://img.shields.io/badge/Google%20Gemini-2.5%20Flash-8E75B2?style=for-the-badge&logo=google)
 ![Status](https://img.shields.io/badge/Status-Active-success?style=for-the-badge)
 
-**KarBot** is an intelligent, multimodal support assistant built for the **StreamKar** platform. Unlike traditional chatbots, KarBot utilizes **Google Gemini 2.5 Flash** to "see" user issues through screenshots and **Flux AI** to purely generate creative brand assets on demand.
+**StreamKar Bot** is an intelligent, multimodal support assistant built for the **StreamKar** platform. Unlike traditional chatbots, StreamKar Bot utilizes **Google Gemini 2.5 Flash** to "see" user issues through screenshots and **Flux AI** to purely generate creative brand assets on demand.
 
 ---
 
@@ -20,7 +20,7 @@
 * **Visual Reasoning:** The bot analyzes the image using Gemini Vision to identify the problem and suggest a fix instantly.
 
 ### 3. 🎨 Generative AI Branding
-* **Flux Model Integration:** Generates high-quality, 3D neon-style avatars and logos.
+* **Flux Model Integration:** Generates high-quality, 3D neon-style avatars.
 * **Smart Prompting:** Uses prompt engineering to maintain brand consistency (Official StreamKar Logo style) without needing external reference images.
 
 ---
