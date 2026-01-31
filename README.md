@@ -21,7 +21,7 @@
 
 ### 3. 🎨 Generative AI Branding
 * **Flux Model Integration:** Generates high-quality, 3D neon-style avatars and logos.
-* **Smart Prompting:** Uses prompt engineering to maintain brand consistency (Official StreamKar "S" Logo style) without needing external reference images.
+* **Smart Prompting:** Uses prompt engineering to maintain brand consistency (Official StreamKar Logo style) without needing external reference images.
 
 ---
 
@@ -47,7 +47,7 @@
 ### Image Generation
 > **User:** "Create a logo for me."
 >
-> **KarBot:** *Generates a 3D Cyberpunk StreamKar 'S' Logo.*
+> **StreamKar Bot:** *Generates a 3D Cyberpunk StreamKar themed Logo.*
 
 ---
 
@@ -67,7 +67,7 @@ cd streamkar-bot
 pip install -r requirements.txt
 ```
 ### 3. Configuration
-* Create a .env file in the root directory and add your API key:
+* Create a `.env` file in the root directory and add your API key:
 ```bash
 GEMINI_API_KEY=your_actual_api_key_here
 ```
@@ -75,7 +75,7 @@ GEMINI_API_KEY=your_actual_api_key_here
 ```bash
 python main.py
 ```
-* The server will start at http://localhost:8000 (or 0.0.0.0:8000 for deployments).
+* The server will start at `http://localhost:8000` (or `0.0.0.0:8000` for deployments).
 
 ### 📂 Project Structure
 ```bash
@@ -90,7 +90,7 @@ streamkar-bot/
 ### 🤝 Contributing
 * Contributions are welcome! Please fork the repository and submit a Pull Request.
 1. Fork the Project
-2. Create your Feature Branch **(git checkout -b feature/NewFeature)**
-3. Commit your Changes **(git commit -m 'Add some NewFeature')**
-4. Push to the Branch **(git push origin feature/NewFeature)**
+2. Create your Feature Branch **(`git checkout -b feature/NewFeature`)**
+3. Commit your Changes **(`git commit -m 'Add some NewFeature'`)**
+4. Push to the Branch **(`git push origin feature/NewFeature`)**
 5. Open a Pull Request
