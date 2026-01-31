@@ -29,7 +29,7 @@
 
 | Component | Technology | Purpose |
 | :--- | :--- | :--- |
-| **LLM Core** | `Google Gemini 1.5 Flash` | Reasoning, Chat, and Vision processing. |
+| **LLM Core** | `Google Gemini 2.5 Flash` | Reasoning, Chat, and Vision processing. |
 | **Backend** | `FastAPI` (Python) | High-performance async API to handle requests. |
 | **Image Gen** | `Pollinations.ai (Flux)` | Serverless generation of brand assets. |
 | **Frontend** | `HTML5 / CSS3 / JS` | Responsive chat interface with file upload support. |
