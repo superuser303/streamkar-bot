@@ -1,24 +1,96 @@
-# StreamKar AI Support Bot 🤖
+# 🤖 StreamKar Bot: Multimodal AI Support Agent
 
-![Python](https://img.shields.io/badge/Python-3.9%2B-blue)
-![FastAPI](https://img.shields.io/badge/FastAPI-0.68%2B-green)
-![Gemini API](https://img.shields.io/badge/AI-Gemini%202.5%20Flash-orange)
-![Status](https://img.shields.io/badge/Status-Production%20Ready-brightgreen)
+![Python](https://img.shields.io/badge/Python-3.9%2B-blue?style=for-the-badge&logo=python)
+![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white)
+![Gemini AI](https://img.shields.io/badge/Google%20Gemini-2.5%20Flash-8E75B2?style=for-the-badge&logo=google)
+![Status](https://img.shields.io/badge/Status-Active-success?style=for-the-badge)
 
-## 📖 About The Project
+**KarBot** is an intelligent, multimodal support assistant built for the **StreamKar** platform. Unlike traditional chatbots, KarBot utilizes **Google Gemini 1.5 Flash** to "see" user issues through screenshots and **Flux AI** to purely generate creative brand assets on demand.
 
-The **StreamKar AI Support Bot** is an intelligent conversational agent designed to automate customer support for [StreamKar](https://www.streamkar.com). Built to assist new and existing users, this bot instantly answers frequently asked questions regarding:
+---
 
-* **Account Management:** Sign-up, password resets, and profile updates.
-* **Streaming Mechanics:** How to start a broadcast, PK battles, and Multi-guest features.
-* **Economy:** Explanations of Beans, Gems, and salary withdrawal processes.
-* **Troubleshooting:** Common fixes for audio lag, login errors, and app freezes.
+## 🚀 Key Features
 
-### 💡 Why this exists?
-StreamKar has a vast ecosystem of features that can be overwhelming for new users. This project leverages **Google's Gemini 2.5 Flash** model with a **RAG (Retrieval-Augmented Generation)** architecture to provide accurate, context-grounded answers 24/7, reducing the load on human support teams.
+### 1. 🧠 Context-Aware Support (RAG)
+* **Intelligent Retrieval:** answers complex queries about StreamKar policies (PK Battles, Agency, Withdrawals) using a grounded Knowledge Base.
+* **Zero Hallucinations:** Strictly adheres to the provided context (`context.txt`) to ensure accurate support.
 
-### ⚙️ How it works
-1.  **User Input:** The user asks a question via the web interface.
-2.  **Context Retrieval:** The backend retrieves relevant policy and FAQ data from a structured knowledge base (`context.txt`).
-3.  **AI Processing:** The Gemini API processes the user's query along with the retrieved context to generate a helpful, human-like response.
-4.  **Guardrails:** System instructions ensure the bot stays on topic and strictly adheres to StreamKar's official policies.
+### 2. 👁️ Vision Analysis (Multimodal)
+* **Screenshot Debugging:** Users can upload screenshots of error messages or app interfaces.
+* **Visual Reasoning:** The bot analyzes the image using Gemini Vision to identify the problem and suggest a fix instantly.
+
+### 3. 🎨 Generative AI Branding
+* **Flux Model Integration:** Generates high-quality, 3D neon-style avatars and logos.
+* **Smart Prompting:** Uses prompt engineering to maintain brand consistency (Official StreamKar "S" Logo style) without needing external reference images.
+
+---
+
+## 🛠️ System Architecture
+
+| Component | Technology | Purpose |
+| :--- | :--- | :--- |
+| **LLM Core** | `Google Gemini 1.5 Flash` | Reasoning, Chat, and Vision processing. |
+| **Backend** | `FastAPI` (Python) | High-performance async API to handle requests. |
+| **Image Gen** | `Pollinations.ai (Flux)` | Serverless generation of brand assets. |
+| **Frontend** | `HTML5 / CSS3 / JS` | Responsive chat interface with file upload support. |
+| **Database** | `Context.txt` (Flat File) | Lightweight knowledge base for RAG. |
+
+---
+
+## 📸 Usage Examples
+
+### Vision Analysis
+> **User:** *Uploads screenshot of login error*
+>
+> **KarBot:** "I see a 'Network Timeout' error in your screenshot. Please check your connection or try clearing the app cache."
+
+### Image Generation
+> **User:** "Create a logo for me."
+>
+> **KarBot:** *Generates a 3D Cyberpunk StreamKar 'S' Logo.*
+
+---
+
+## 💻 Installation & Setup
+
+### Prerequisites
+* Python 3.9 or higher
+* Google AI Studio API Key
+
+### 1. Clone the Repository
+```bash
+git clone [https://github.com/superuser303/streamkar-bot.git](https://github.com/superuser303/streamkar-bot.git)
+cd streamkar-bot
+```
+### 2. Install Dependencies
+```bash
+pip install -r requirements.txt
+```
+### 3. Configuration
+* Create a .env file in the root directory and add your API key:
+```bash
+GEMINI_API_KEY=your_actual_api_key_here
+```
+### 4. Run the Server
+```bash
+python main.py
+```
+* The server will start at http://localhost:8000 (or 0.0.0.0:8000 for deployments).
+
+### 📂 Project Structure
+```bash
+streamkar-bot/
+├── main.py              # Application Entry Point & API Logic
+├── index.html           # Frontend Interface
+├── context.txt          # Knowledge Base Source
+├── requirements.txt     # Python Package List
+├── logo2.png            # Static Assets
+└── README.md            # Documentation
+```
+### 🤝 Contributing
+* Contributions are welcome! Please fork the repository and submit a Pull Request.
+* 1. Fork the Project**
+* 2. Create your Feature Branch **(git checkout -b feature/NewFeature)**
+* 3. Commit your Changes **(git commit -m 'Add some NewFeature')**
+* 4. Push to the Branch **(git push origin feature/NewFeature)**
+* 5. Open a Pull Request
