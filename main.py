@@ -99,9 +99,9 @@ async def chat_endpoint(request: ChatRequest):
 async def generate_logo_endpoint():
     # 1. THE REAL WORKING REFERENCE (Google's High-Res Icon API)
     # This grabs the official StreamKar logo dynamically
-    ref_image = "https://raw.githubusercontent.com/superuser303/streamkar-bot/refs/heads/main/images.jpeg"
+    ref_image = "https://raw.githubusercontent.com/superuser303/streamkar-bot/main/logo2.png"
     # 2. The Prompt (Describes the STYLE, while the image provides the SHAPE)
-    prompt = "cyberpunk neon style, glowing purple and gold edges, 3d glossy render, futuristic, high quality, 8k resolution Avatars of the reference image"
+    prompt = "cyberpunk neon style, glowing purple and gold edges, 3d glossy render, futuristic, high quality, 8k resolution Avatars of the reference image as it's variations"
     
     # 3. Random Seed
     seed = random.randint(1, 99999)
