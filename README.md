@@ -43,9 +43,9 @@
 > **KarBot:** "I see a 'Network Timeout' error in your screenshot. Please check your connection or try clearing the app cache."
 
 ### Image Generation
-> **User:** "Create a logo for me."
+> **User:** "Create a Avatar for me."
 >
-> **StreamKar Bot:** *Generates a 3D Cyberpunk StreamKar themed Logo.*
+> **StreamKar Bot:** *Generates a 3D Cyberpunk StreamKar themed Avatar.*
 
 ---
 
