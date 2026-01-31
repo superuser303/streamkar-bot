@@ -37,8 +37,6 @@
 
 ---
 
-## 📸 Usage Examples
-
 ### Vision Analysis
 > **User:** *Uploads screenshot of login error*
 >
