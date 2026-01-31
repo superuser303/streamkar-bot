@@ -1,4 +1,4 @@
-# 🤖 StreamKar Bot: Multimodal AI Support Agent
+# 🤖 StreamKar Bot: AI Support Agent
 
 ![Python](https://img.shields.io/badge/Python-3.9%2B-blue?style=for-the-badge&logo=python)
 ![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white)
