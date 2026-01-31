@@ -5,7 +5,7 @@
 ![Gemini AI](https://img.shields.io/badge/Google%20Gemini-2.5%20Flash-8E75B2?style=for-the-badge&logo=google)
 ![Status](https://img.shields.io/badge/Status-Active-success?style=for-the-badge)
 
-**KarBot** is an intelligent, multimodal support assistant built for the **StreamKar** platform. Unlike traditional chatbots, KarBot utilizes **Google Gemini 1.5 Flash** to "see" user issues through screenshots and **Flux AI** to purely generate creative brand assets on demand.
+**KarBot** is an intelligent, multimodal support assistant built for the **StreamKar** platform. Unlike traditional chatbots, KarBot utilizes **Google Gemini 2.5 Flash** to "see" user issues through screenshots and **Flux AI** to purely generate creative brand assets on demand.
 
 ---
 
@@ -89,8 +89,8 @@ streamkar-bot/
 ```
 ### 🤝 Contributing
 * Contributions are welcome! Please fork the repository and submit a Pull Request.
-## 1. Fork the Project
-## 2. Create your Feature Branch **(git checkout -b feature/NewFeature)**
-## 3. Commit your Changes **(git commit -m 'Add some NewFeature')**
-## 4. Push to the Branch **(git push origin feature/NewFeature)**
-## 5. Open a Pull Request
+1. Fork the Project
+2. Create your Feature Branch **(git checkout -b feature/NewFeature)**
+3. Commit your Changes **(git commit -m 'Add some NewFeature')**
+4. Push to the Branch **(git push origin feature/NewFeature)**
+5. Open a Pull Request
