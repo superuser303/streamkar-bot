@@ -109,7 +109,7 @@ async def chat_endpoint(request: ChatRequest):
         content.append(request.message)
 
         # 3. Generate
-        response = await model.generate_content_async(content)
+        response = await generate_with_fallback(content)
         return {"reply": response.text}
 
     except Exception as e:
