@@ -4,6 +4,7 @@ import urllib.parse
 import base64
 import time
 import google.generativeai as genai
+from google.api_core.exceptions import GoogleAPICallError, RetryError
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -34,27 +35,49 @@ except FileNotFoundError:
     KNOWLEDGE_BASE = "Context unavailable."
 
 # Configure Gemini
-API_KEY = os.getenv("GEMINI_API_KEY")
-if API_KEY:
-    genai.configure(api_key=API_KEY)
-    model = genai.GenerativeModel(
-        'gemini-2.5-flash',
-        system_instruction="""
-        You are 'StreamKar Bot', the helpful support assistant for StreamKar.
-        
-        GUIDELINES:
-        1. Be polite but CONCISE (Max 3 sentences).
-        2. Use **Bold** for buttons/menus.
-        3. Use Bullet points for steps.
-        4. Answer ONLY from the Context.
-        5. If the user uploads an image, analyze it helpfully.
-        
-        Context:
-        """ + KNOWLEDGE_BASE
-    )
-else:
-    model = None
+API_KEYS = [
+    os.getenv("GEMINI_API_KEY"),
+    os.getenv("GEMINI_API_KEY_2") 
+]
 
+SYSTEM_PROMPT = """
+You are 'StreamKar Bot', the helpful support assistant for StreamKar.
+
+GUIDELINES:
+1. Be polite but CONCISE (Max 3 sentences).
+2. Use **Bold** for buttons/menus.
+3. Use Bullet points for steps.
+4. Answer ONLY from the Context.
+5. If the user uploads an image, analyze it helpfully.
+
+Context:
+""" + KNOWLEDGE_BASE
+
+#The Fallback Function
+async def generate_with_fallback(contents):
+    """Tries to generate content using keys one by one."""
+    last_error = None
+    
+    for i, key in enumerate(API_KEYS):
+        if not key: continue # Skip if key is missing
+        
+        try:
+            # Configure with current key
+            genai.configure(api_key=key)
+            # Initialize model 
+            model = genai.GenerativeModel('gemini-2.5-flash', system_instruction=SYSTEM_PROMPT)
+            
+            # Generate Async
+            response = await model.generate_content_async(contents)
+            return response
+            
+        except (GoogleAPICallError, RetryError, Exception) as e:
+            print(f"⚠️ Key #{i+1} failed. Switching to next key... Error: {e}")
+            last_error = e
+            
+    # If loop finishes and nothing worked:
+    raise last_error or Exception("All API keys failed.")
+    
 # --- REQUEST MODELS ---
 class ChatRequest(BaseModel):
     message: str
@@ -63,9 +86,6 @@ class ChatRequest(BaseModel):
 # --- ENDPOINT 1: CHAT & VISION ---
 @app.post("/chat")
 async def chat_endpoint(request: ChatRequest):
-    if not model:
-        raise HTTPException(status_code=500, detail="API Key Missing")
-    
     try:
         content = []
         
