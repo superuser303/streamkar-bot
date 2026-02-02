@@ -64,6 +64,7 @@ async def generate_with_fallback(contents):
         try:
             # Configure with current key
             genai.configure(api_key=key)
+            
             # Initialize model 
             model = genai.GenerativeModel('gemini-2.5-flash', system_instruction=SYSTEM_PROMPT)
             
