@@ -133,3 +133,6 @@ async def generate_logo_endpoint():
     return {"image_url": final_url}
             
     return {"error": "Model took too long to load. Please try again."}
+ 
+if __name__ == "__main__":
+    uvicorn.run(app, host="0.0.0.0", port=8000)
