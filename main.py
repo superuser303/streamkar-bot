@@ -2,18 +2,13 @@ import os
 import random
 import urllib.parse
 import base64
-import time
 import google.generativeai as genai
 from google.api_core.exceptions import GoogleAPICallError, RetryError
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import uvicorn
 from dotenv import load_dotenv
-
-# Imports for Vision Processing
-from PIL import Image
-import io
 
 load_dotenv()
 
@@ -27,14 +22,14 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Load Knowledge Base
+# --- LOAD KNOWLEDGE BASE ---
 try:
     with open("context.txt", "r") as f:
         KNOWLEDGE_BASE = f.read()
 except FileNotFoundError:
     KNOWLEDGE_BASE = "Context unavailable."
 
-# Configure Gemini
+# --- CONFIGURE GEMINI ---
 API_KEYS = [
     os.getenv("GEMINI_API_KEY"),
     os.getenv("GEMINI_API_KEY_2") 
@@ -53,22 +48,17 @@ GUIDELINES:
 Context:
 """ + KNOWLEDGE_BASE
 
-#The Fallback Function
+# --- FALLBACK FUNCTION ---
 async def generate_with_fallback(contents):
     """Tries to generate content using keys one by one."""
     last_error = None
     
     for i, key in enumerate(API_KEYS):
-        if not key: continue # Skip if key is missing
+        if not key: continue 
         
         try:
-            # Configure with current key
             genai.configure(api_key=key)
-            
-            # Initialize model 
             model = genai.GenerativeModel('gemini-2.5-flash', system_instruction=SYSTEM_PROMPT)
-            
-            # Generate Async
             response = await model.generate_content_async(contents)
             return response
             
@@ -76,13 +66,12 @@ async def generate_with_fallback(contents):
             print(f"⚠️ Key #{i+1} failed. Switching to next key... Error: {e}")
             last_error = e
             
-    # If loop finishes and nothing worked:
     raise last_error or Exception("All API keys failed.")
     
 # --- REQUEST MODELS ---
 class ChatRequest(BaseModel):
     message: str
-    image: str | None = None  # Accepts Base64 string
+    image: str | None = None
 
 # --- ENDPOINT 1: CHAT & VISION ---
 @app.post("/chat")
@@ -92,14 +81,18 @@ async def chat_endpoint(request: ChatRequest):
         
         # 1. Handle Image (Vision)
         if request.image:
-            # Clean base64 string
+            # Remove header if present
             if "base64," in request.image:
-                request.image = request.image.split("base64,")[1]
-            
-            # Decode and prepare for Gemini
+                header, base64_str = request.image.split("base64,")
+                # Simple MIME detection
+                mime_type = "image/png" if "png" in header else "image/jpeg"
+                request.image = base64_str
+            else:
+                mime_type = "image/jpeg" # Default
+
             image_data = base64.b64decode(request.image)
             image_parts = {
-                "mime_type": "image/jpeg",
+                "mime_type": mime_type,
                 "data": image_data
             }
             content.append(image_parts)
@@ -116,23 +109,26 @@ async def chat_endpoint(request: ChatRequest):
         print(f"Error: {e}")
         return {"reply": "I'm having trouble analyzing that. Please try again."}
 
+# --- ENDPOINT 2: LOGO GENERATION (FIXED) ---
 @app.post("/generate-logo")
 async def generate_logo_endpoint():
     ref_image = "https://raw.githubusercontent.com/superuser303/streamkar-bot/main/logo2.png"
     
-    # 2. The Prompt (Describes the STYLE, while the image provides the SHAPE)
+    # Define prompt
     prompt = "cyberpunk neon style, glowing purple and gold edges, 3d glossy render, futuristic, high quality, 8k resolution, Avatars of the reference image in different poses, profile pic worthy, natural look & features"  
     
-    # 3. Random Seed
+    # 1. URL Encode the Prompt (Fixes 502 Error)
+    encoded_prompt = urllib.parse.quote(prompt)
+    
+    # 2. URL Encode the Reference Image
+    encoded_ref = urllib.parse.quote(ref_image)
+    
     seed = random.randint(1, 99999)
     
-    # 4. Construct URL
-    encoded_ref = urllib.parse.quote(ref_image)
-    final_url = f"https://image.pollinations.ai/prompt/{prompt}?image={encoded_ref}&seed={seed}&nologo=true"
+    # 3. Construct Correct URL
+    final_url = f"https://image.pollinations.ai/prompt/{encoded_prompt}?image={encoded_ref}&seed={seed}&nologo=true"
     
     return {"image_url": final_url}
-            
-    return {"error": "Model took too long to load. Please try again."}
  
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)
