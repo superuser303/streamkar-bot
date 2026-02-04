@@ -7,7 +7,7 @@ import google.generativeai as genai
 from google.api_core.exceptions import GoogleAPICallError, RetryError
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import Response # NEW: To send image bytes directly
+from fastapi.responses import Response 
 from pydantic import BaseModel
 import uvicorn
 from dotenv import load_dotenv
@@ -134,7 +134,6 @@ async def generate_logo_endpoint():
     base_url = f"https://image.pollinations.ai/prompt/{encoded_prompt}"
     params = f"?image={encoded_ref}&seed={seed}&nologo=true&model=flux"
     
-    # Only add key if it exists to avoid errors if you forget to set it
     if pollinations_key:
         params += f"&key={pollinations_key}"
         
@@ -151,7 +150,6 @@ async def generate_logo_endpoint():
             return {"error": f"Pollinations API Error: {response.status_code}"}
 
         # 5. Return the image bytes directly
-        # The frontend will receive a Blob/Image, not a text URL
         return Response(content=response.content, media_type="image/jpeg")
 
     except Exception as e:
