@@ -2,10 +2,12 @@ import os
 import random
 import urllib.parse
 import base64
+import requests 
 import google.generativeai as genai
 from google.api_core.exceptions import GoogleAPICallError, RetryError
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import Response # NEW: To send image bytes directly
 from pydantic import BaseModel
 import uvicorn
 from dotenv import load_dotenv
@@ -109,26 +111,52 @@ async def chat_endpoint(request: ChatRequest):
         print(f"Error: {e}")
         return {"reply": "I'm having trouble analyzing that. Please try again."}
 
-# --- ENDPOINT 2: LOGO GENERATION (FIXED) ---
+# --- ENDPOINT 2: LOGO GENERATION (SECURE PROXY) ---
 @app.post("/generate-logo")
 async def generate_logo_endpoint():
+    # 1. Get Key securely
+    pollinations_key = os.getenv("POLLINATIONS_API_KEY")
+    if not pollinations_key:
+        print("⚠️ Warning: POLLINATIONS_API_KEY not found in .env")
+
     ref_image = "https://raw.githubusercontent.com/superuser303/streamkar-bot/main/logo2.png"
     
     # Define prompt
     prompt = "cyberpunk neon style, glowing purple and gold edges, 3d glossy render, futuristic, high quality, 8k resolution, Avatars of the reference image in different poses, profile pic worthy, natural look & features"  
     
-    # 1. URL Encode the Prompt (Fixes 502 Error)
+    # 2. URL Encode (CRITICAL FIX for 502 Error)
     encoded_prompt = urllib.parse.quote(prompt)
-    
-    # 2. URL Encode the Reference Image
     encoded_ref = urllib.parse.quote(ref_image)
-    
     seed = random.randint(1, 99999)
     
-    # 3. Construct Correct URL
-    final_url = f"https://image.pollinations.ai/prompt/{encoded_prompt}?image={encoded_ref}&seed={seed}&nologo=true"
+    # 3. Construct URL
+    # We add &model=flux for stability and &key= for authentication
+    base_url = f"https://image.pollinations.ai/prompt/{encoded_prompt}"
+    params = f"?image={encoded_ref}&seed={seed}&nologo=true&model=flux"
     
-    return {"image_url": final_url}
+    # Only add key if it exists to avoid errors if you forget to set it
+    if pollinations_key:
+        params += f"&key={pollinations_key}"
+        
+    final_url = base_url + params
+    
+    try:
+        # 4. Fetch the image securely (Backend-to-Backend)
+        print(f"Generating logo with seed {seed}...")
+        response = requests.get(final_url, timeout=30) # 30s timeout
+        
+        # Check if Pollinations returned an error (like 502 or 403)
+        if response.status_code != 200:
+            print(f"Pollinations Error: {response.status_code} - {response.text}")
+            return {"error": f"Pollinations API Error: {response.status_code}"}
+
+        # 5. Return the image bytes directly
+        # The frontend will receive a Blob/Image, not a text URL
+        return Response(content=response.content, media_type="image/jpeg")
+
+    except Exception as e:
+        print(f"Generation Failed: {e}")
+        return {"error": "Failed to generate logo. Please try again."}
  
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)
