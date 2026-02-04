@@ -155,6 +155,10 @@ async def generate_logo_endpoint():
     except Exception as e:
         print(f"Generation Failed: {e}")
         return {"error": "Failed to generate logo. Please try again."}
+
+@app.get("/")
+async def root():
+    return {"status": "alive", "message": "StreamKar Bot is running!"}
  
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)
